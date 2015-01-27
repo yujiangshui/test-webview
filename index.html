@@ -63,7 +63,7 @@
   <h3>检测到的信息</h3>
   <ul>
     <li class="os">手机系统： <span></span></li>
-    <li class="device">设备名称： <span></span></li>
+    <!-- <li class="device">设备名称： <span></span></li> -->
     <li class="browser">浏览器名称： <span></span></li>
     <li class="engine">浏览器内核： <span></span></li>
   </ul>
@@ -73,6 +73,7 @@
   <h3>请选择当前使用的手机 APP</h3>
   <select name="useapp" id="useapp">
     <option value="origin">Android 原生浏览器</option>
+    <option value="safari">iOS Safari</option>
     <option value="weixinwv">微信 WebView</option>
     <option value="qqwv">QQ WebView</option>
     <option value="ucbrowser">UC 浏览器</option>
@@ -89,7 +90,7 @@
 
 <div class="info">
   <h3>个性化信息</h3>
-  <h4>标识符（必填，多次测试需要保持一致）</h4>
+  <h4>标识符（必填，多次测试需要保持一致，建议格式“网名-设备”）</h4>
   <input type="text" name="testname" class="testname">
 </div>
 
@@ -112,7 +113,7 @@ var duoshuoQuery = {short_name:"jiangshui-test"};
     ds.type = 'text/javascript';ds.async = true;
     ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
     ds.charset = 'UTF-8';
-    (document.getElementsByTagName('head')[0] 
+    (document.getElementsByTagName('head')[0]
      || document.getElementsByTagName('body')[0]).appendChild(ds);
   })();
   </script>
@@ -121,10 +122,11 @@ var duoshuoQuery = {short_name:"jiangshui-test"};
 
 <script src="http://cdn.staticfile.org/zepto/1.0rc1/zepto.min.js"></script>
 <script src="./ua-parser.min.js"></script>
+<script src="./useapp.js"></script>
 
 <script>
 
-function postIframe(target_url, method, params){
+function postIframe(target_url, method, params, handle){
     //Add iframe
     var iframe = document.createElement("iframe");
     document.body.appendChild(iframe);
@@ -155,6 +157,10 @@ function postIframe(target_url, method, params){
 
     document.body.appendChild(form);
     form.submit();
+
+    if (handle) {
+      handle();
+    }
 }
 
 
@@ -162,16 +168,25 @@ $(function() {
 
   var parser = new UAParser();
   var uaResult = parser.getResult();
+  useapp.ua = uaResult.ua;
 
   var strOS = uaResult.os.name + '|' + uaResult.os.version;
-  var strDevice = uaResult.device.type + '|' + uaResult.device.vendor + '|' + uaResult.device.model;
+  // var strDevice = uaResult.device.type + '|' + uaResult.device.vendor + '|' + uaResult.device.model;
   var strBrowser = uaResult.browser.name + '|' + uaResult.browser.version;
   var strEngine = uaResult.engine.name + '|' + uaResult.engine.version;
 
   $('.os span').html(strOS);
-  $('.device span').html(strDevice);
+  // $('.device span').html(strDevice);
   $('.browser span').html(strBrowser);
   $('.engine span').html(strEngine);
+
+  // 预判断浏览器
+  if (useapp.isSafari()) $('#useapp').val('safari');
+  if (useapp.isWechat()) $('#useapp').val('weixinwv');
+  if (useapp.isQQ()) $('#useapp').val('qqwv');
+  if (useapp.isQQbrowser()) $('#useapp').val('qqbrowser');
+  if (useapp.isUC()) $('#useapp').val('ucbrowser');
+  if (useapp.isBaidu()) $('#useapp').val('bdbrowser');
 
 
   $('.submit').on('click', function(e) {
@@ -181,10 +196,7 @@ $(function() {
     messageObj.testname = $('.testname').val() || 'test';
     messageObj.useapp = $('#useapp').val();
     messageObj.useqqbrowser = $('input[name=useqqbrowser]:checked').val() || 2;
-    messageObj.os = strOS;
-    messageObj.device = strDevice;
-    messageObj.browser = strBrowser;
-    messageObj.engine = strEngine;
+    messageObj.ua = useapp.ua;
 
 
     var result = {};
@@ -195,7 +207,12 @@ $(function() {
     result.message = JSON.stringify(messageObj);
 
 
-    postIframe('http://api.duoshuo.com/posts/create.json', 'POST', result);
+    postIframe('http://api.duoshuo.com/posts/create.json', 'POST', result, function() {
+      alert('提交成功，感谢协助！');
+      setTimeout(function() {
+        location.reload();
+      }, 1000);
+    });
 
   });
 
