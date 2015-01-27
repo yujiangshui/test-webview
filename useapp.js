@@ -22,7 +22,7 @@ window.useapp = {
 		return ( this.lowUA().indexOf('ucbrowser') > 0 );
 	},
 	isBaidu: function() {
-		// return ( this.lowUA().indexOf('MicroMessenger') > 0 );
+		return ( this.lowUA().indexOf('baidubrowser') > 0 );
 	},
 	isChrome: function() {
 		// return ( this.lowUA().indexOf('MicroMessenger') > 0 );
