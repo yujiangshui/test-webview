@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1" />
+  <!-- <meta name="viewport" content="width=640,target-densitydpi=device-dpi,user-scalable=no" /> -->
+  <meta name="renderer" content="webkit">
+  <title>WebView core test</title>
+
+  <style>
+    h4{
+      margin: .8em 0;
+    }
+    .info{
+      margin-top: 40px;
+    }
+    .info ul{
+      list-style: none;
+      padding-left: 0px;
+    }
+    input[type=text]{
+      padding: 5px 10px;
+      width: 200px;
+    }
+    .submit{
+      background: #3498db;
+      color: #fff;
+      font-size: 20px;
+      padding: 10px 30px;
+      margin-bottom: 20px;
+      display: inline-block;
+      text-decoration: none;
+    }
+    .submit:hover{
+      background: #2980b9;
+    }
+
+    .ds-meta,
+    .ds-toolbar,
+    .ds-replybox,
+    .ds-post-reply,
+    .ds-post-likes,
+    .ds-post-repost,
+    .ds-post-report,
+    .ds-login-buttons,
+    .ds-post-delete
+    {
+      display: none !important;
+    }
+  </style>
+
+</head>
+<body class="">
+
+<div class="info">
+  <h2>测试手机应用 WebView 的内核</h2>
+  <p>具体介绍和测试方法，请看：XX</p>
+</div>
+
+<div class="info">
+  <h3>检测到的信息</h3>
+  <ul>
+    <li class="os">手机系统： <span></span></li>
+    <li class="device">设备名称： <span></span></li>
+    <li class="browser">浏览器名称： <span></span></li>
+    <li class="engine">浏览器内核： <span></span></li>
+  </ul>
+</div>
+
+<div class="info">
+  <h3>请选择当前使用的手机 APP</h3>
+  <select name="useapp" id="useapp">
+    <option value="origin">Android 原生浏览器</option>
+    <option value="weixinwv">微信 WebView</option>
+    <option value="qqwv">QQ WebView</option>
+    <option value="ucbrowser">UC 浏览器</option>
+    <option value="qqbrowser">QQ 浏览器</option>
+    <option value="chrome">Chrome for Android</option>
+  </select>
+</div>
+
+<div class="info">
+  <h3>是否安装过 QQ 浏览器？</h3>
+  <label><input type="radio" value="1" name="useqqbrowser" checked> 是</label>
+  <label><input type="radio" value="0" name="useqqbrowser"> 否</label>
+</div>
+
+<div class="info">
+  <h3>个性化信息</h3>
+  <h4>标识符（必填，多次测试需要保持一致）</h4>
+  <input type="text" name="testname" class="testname">
+</div>
+
+<div class="info">
+  <a href="#" class="submit">提交结果</a>
+</div>
+
+<hr>
+
+<h2>已有测试结果：</h2>
+
+<!-- 多说评论框 start -->
+<div class="ds-thread" data-thread-key="1" data-title="测试 WebView" data-url="http://yujiangshui.github.io/test-webview/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"jiangshui-test"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+
+<script src="http://cdn.staticfile.org/zepto/1.0rc1/zepto.min.js"></script>
+<script src="./ua-parser.min.js"></script>
+
+<script>
+
+function postIframe(target_url, method, params){
+    //Add iframe
+    var iframe = document.createElement("iframe");
+    document.body.appendChild(iframe);
+    iframe.style.display = "none";
+
+    //Give the frame a name
+    var frame_name = "frame_name" + (new Date).getTime();
+    iframe.contentWindow.name = frame_name;
+
+    //build the form
+    var form = document.createElement("form");
+    form.target = frame_name;
+    form.action = target_url;
+    form.method = method;
+
+    //loop through all parameters
+    for (var key in params)
+    {
+        if (params.hasOwnProperty(key))
+        {
+            var input = document.createElement("input");
+            input.type = "hidden";
+            input.name = key;
+            input.value = params[key];
+            form.appendChild(input);
+        }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
+
+$(function() {
+
+  var parser = new UAParser();
+  var uaResult = parser.getResult();
+
+  var strOS = uaResult.os.name + '|' + uaResult.os.version;
+  var strDevice = uaResult.device.type + '|' + uaResult.device.vendor + '|' + uaResult.device.model;
+  var strBrowser = uaResult.browser.name + '|' + uaResult.browser.version;
+  var strEngine = uaResult.engine.name + '|' + uaResult.engine.version;
+
+  $('.os span').html(strOS);
+  $('.device span').html(strDevice);
+  $('.browser span').html(strBrowser);
+  $('.engine span').html(strEngine);
+
+
+  $('.submit').on('click', function(e) {
+    e.preventDefault();
+
+    var messageObj = {};
+    messageObj.testname = $('.testname').val() || 'test';
+    messageObj.useapp = $('#useapp').val();
+    messageObj.useqqbrowser = $('input[name=useqqbrowser]:checked').val() || 2;
+    messageObj.os = strOS;
+    messageObj.device = strDevice;
+    messageObj.browser = strBrowser;
+    messageObj.engine = strEngine;
+
+
+    var result = {};
+    result.short_name = 'jiangshui-test';
+    result.thread_key = '1';
+    result.secret = '4ead768a9e5d5839e706d09bcb0733a2';
+    result.author_name = $('.testname').val() || 'test';
+    result.message = JSON.stringify(messageObj);
+
+
+    postIframe('http://api.duoshuo.com/posts/create.json', 'POST', result);
+
+  });
+
+
+});
+
+
+</script>
+
+</body>
+</html>
